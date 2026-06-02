@@ -156,10 +156,9 @@ function renderLearn(root, params) {
   function getRenHTML() {
     var wHtml = '';
     charData.words.forEach(function(w){
-      wHtml += '<div class="ren-word-row" data-action="speak-word" data-word="'+w.word+'"><span>'+w.word+'</span><span class="rw-py">'+w.pinyin+'</span></div>';
+      wHtml += '<span class="ren-word-row" data-action="speak-word" data-word="'+w.word+'">'+w.word+'<span class="rw-py">'+w.pinyin+'</span></span>';
     });
 
-    // 拟物动画：emoji渐变为汉字
     var morphHTML = '';
     if (charData.emoji && charData.emoji.length <= 4) {
       morphHTML =
@@ -168,33 +167,24 @@ function renderLearn(root, params) {
           '<div class="morph-char" id="morph-char">'+charData.char+'</div>'+
         '</div>';
     } else {
-      // 没有emoji的字：气泡+字
       var cl = ['#FFD93D,#FF6B6B','#4ECDC4,#45B7D1','#A29BFE,#6C5CE7','#FD79A8,#E84393'];
       var c = cl[charData.id % cl.length];
       morphHTML =
         '<div class="morph-stage" id="morph-stage">'+
-          '<div class="morph-emoji" id="morph-emoji" style="width:160px;height:160px;border-radius:50%;background:linear-gradient(135deg,'+c+');margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:70px;color:white;font-weight:900">'+charData.char+'</div>'+
+          '<div class="morph-emoji" id="morph-emoji" style="width:18vmin;height:18vmin;border-radius:50%;background:linear-gradient(135deg,'+c+');margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:10vmin;color:white;font-weight:900">'+charData.char+'</div>'+
           '<div class="morph-char" id="morph-char">'+charData.char+'</div>'+
         '</div>';
     }
 
     return '<div class="ren-full">'+
-      // 背景装饰粒子
       '<div class="ren-particles" id="ren-particles"></div>'+
-      // 拟物动画区
       morphHTML +
-      // 拼音
       '<div class="ren-pinyin-row">'+
         '<span class="ren-pinyin-big">'+charData.pinyin+'</span>'+
-        '<button class="speak-btn" data-action="speak-char">🔊</button>'+
+        '<button class="speak-btn" data-action="speak-char" style="padding:4px 12px;font-size:12px">🔊</button>'+
       '</div>'+
-      // 组词
-      '<div class="ren-words-row" id="ren-words-row">'+
-        '<div class="ren-words-box"><h4>📝 组词</h4>'+wHtml+'</div>'+
-        '<div class="ren-sentence">'+charData.sentences[0]+'</div>'+
-      '</div>'+
-      // 按钮
-      '<button class="btn-cartoon" data-action="go-next" style="margin:6px auto 0;display:block">学会啦 → 去读</button>'+
+      '<div class="ren-words-row" id="ren-words-row">'+wHtml+'</div>'+
+      '<button class="btn-cartoon small" data-action="go-next" style="margin:4px 0">学会啦 → 去读</button>'+
     '</div>';
   }
 
