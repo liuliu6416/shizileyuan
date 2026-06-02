@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+  <!-- PWA 基础配置 -->
+  <meta name="application-name" content="识字乐园">
+  <meta name="description" content="专为3-7岁儿童设计的趣味汉字学习应用">
+  <meta name="theme-color" content="#FF6B6B">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- iOS Safari 专属配置 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="识字乐园">
+  <meta name="format-detection" content="telephone=no">
+
+  <!-- Apple Touch Icon（iOS主屏图标） -->
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="apple-touch-icon" href="assets/icon-192.png" sizes="192x192">
+
+  <!-- iOS 启动图（Splash Screen） -->
+  <!-- iPad Pro 12.9" -->
+  <link rel="apple-touch-startup-image" href="assets/splash-2048x2732.png" media="screen and (device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)">
+  <!-- iPad Pro 11" -->
+  <link rel="apple-touch-startup-image" href="assets/splash-1668x2388.png" media="screen and (device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)">
+  <!-- iPhone 14/15 Pro Max -->
+  <link rel="apple-touch-startup-image" href="assets/splash-1290x2796.png" media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)">
+  <!-- iPhone 14/15 Pro -->
+  <link rel="apple-touch-startup-image" href="assets/splash-1179x2556.png" media="screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)">
+  <!-- iPhone 12/13/14 -->
+  <link rel="apple-touch-startup-image" href="assets/splash-1170x2532.png" media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
+  <!-- iPhone 11 / XR -->
+  <link rel="apple-touch-startup-image" href="assets/splash-828x1792.png" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)">
+  <!-- iPhone 6/7/8 Plus -->
+  <link rel="apple-touch-startup-image" href="assets/splash-1242x2208.png" media="screen and (device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)">
+  <!-- iPhone SE / 6/7/8 -->
+  <link rel="apple-touch-startup-image" href="assets/splash-750x1334.png" media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)">
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- 卡通字体：ZCOOL KuaiLe（Google Fonts，免费） -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+
+  <!-- Hanzi Writer（笔画动画库） -->
+  <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
+
+  <link rel="stylesheet" href="css/style.css">
+  <title>识字乐园</title>
+</head>
+<body>
+  <!-- 应用主容器 -->
+  <div id="app-root"></div>
+
+  <!-- 离线提示（默认隐藏） -->
+  <div id="offline-banner" style="display:none">
+    <span>📡 当前处于离线模式</span>
+  </div>
+
+  <!-- JS 模块加载 -->
+  <script src="js/storage.js"></script>
+  <script src="js/tts.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/home.js"></script>
+  <script src="js/learn.js"></script>
+  <script src="js/practice.js"></script>
+  <script src="js/write.js"></script>
+  <script src="js/review.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
