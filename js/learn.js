@@ -16,16 +16,16 @@ function renderLearn(root, params) {
   // 确保索引在范围内
   if (charIndex < 0) charIndex = 0;
   if (charIndex >= chars.length) {
-    // 本关完成，返回首页或进入下一关
+    // 本关完成，进入下一关或回到首页
     var nextLevel = levelId + 1;
-    if (nextLevel <= getTotalLevels() && isLevelUnlocked(nextLevel)) {
+    if (nextLevel <= getTotalLevels()) {
       App.playSound('complete');
       App.showDialog('🎉 太棒了！', '🌟', '你已经完成了第' + levelId + '关！\n继续挑战下一关吧！', '下一关', function() {
         App.navigateTo('learn/' + nextLevel + '/0');
       });
     } else {
       App.playSound('complete');
-      App.showDialog('🎉 全部完成！', '🏆', '这一关的汉字你都认识了！\n真了不起！', '回到首页', function() {
+      App.showDialog('🎉 全部完成！', '🏆', '全部100个汉字你都认识了！\n真了不起！🏆', '回到首页', function() {
         App.navigateTo('home');
       });
     }

@@ -8,7 +8,7 @@ const STORAGE_KEY = 'shizileyuan';
 // 默认应用状态
 const DEFAULT_STATE = {
   progress: {},           // { charId: { learned, practiced, written, stars, practiceScore, lastSeen } }
-  unlockedLevel: 1,       // 已解锁的最高关卡
+  unlockedLevel: 10,      // 所有关卡默认开放
   settings: {
     ttsRate: 0.9,
     ttsEnabled: true,

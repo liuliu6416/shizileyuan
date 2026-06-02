@@ -54,8 +54,7 @@ function renderHome(root, params) {
     var chars = getCharsByLevel(lv);
 
     html += '<div class="level-card';
-    if (!unlocked) html += ' locked';
-    else if (isCurrent) html += ' current';
+    if (isCurrent) html += ' current';
     else html += ' unlocked';
     html += '" data-level="' + lv + '">';
 
@@ -63,16 +62,12 @@ function renderHome(root, params) {
     html += '<div class="level-name">第' + lv + '关</div>';
     html += '<div style="font-size:12px;color:var(--color-text-light)">' + LEVEL_NAMES[lv - 1] + '</div>';
 
-    // 星星
-    if (unlocked) {
-      html += '<div class="level-stars" style="margin-top:6px">';
-      for (var s = 0; s < 3; s++) {
-        html += (s < Math.floor(stars / chars.length)) ? '⭐' : '☆';
-      }
-      html += '</div>';
-    } else {
-      html += '<div style="font-size:24px;margin-top:6px">🔒</div>';
+    // 星星（全部开放）
+    html += '<div class="level-stars" style="margin-top:6px">';
+    for (var s = 0; s < 3; s++) {
+      html += (s < Math.floor(stars / Math.max(chars.length, 1))) ? '⭐' : '☆';
     }
+    html += '</div>';
 
     html += '<div class="level-count">' + chars.length + '个字</div>';
     html += '</div>';
@@ -91,22 +86,13 @@ function renderHome(root, params) {
 
   root.innerHTML = html;
 
-  // 绑定关卡卡片点击
+  // 绑定关卡卡片点击（全部开放，无锁）
   var cards = root.querySelectorAll('.level-card');
   cards.forEach(function(card) {
     card.addEventListener('click', function() {
       var level = parseInt(this.dataset.level);
-      if (isLevelUnlocked(level)) {
-        App.playSound('tap');
-        App.navigateTo('learn/' + level + '/0');
-      } else {
-        App.playSound('wrong');
-        // 轻微抖动提示
-        this.style.animation = 'wrong-shake 0.4s ease-in-out';
-        setTimeout(function() {
-          card.style.animation = '';
-        }, 400);
-      }
+      App.playSound('tap');
+      App.navigateTo('learn/' + level + '/0');
     });
   });
 }

@@ -24,7 +24,7 @@ const PRE_CACHE_URLS = [
   './assets/icon-512.png',
   './assets/apple-touch-icon.png',
   // CDN 资源也缓存
-  'https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap',
+  'https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&family=Ma+Shan+Zheng&display=swap',
   'https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js'
 ];
 
