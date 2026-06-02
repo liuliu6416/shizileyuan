@@ -297,26 +297,44 @@ function renderLearn(root, params) {
     App.playSound('star'); App.showStarAnimation(2);
   }
 
-  // ===== 步骤3：大炮游戏 =====
+  // ===== 步骤3：大炮游戏（升级版） =====
   function initLianGame() {
     var box = document.getElementById('step-box');
     if (!box) return;
 
-    var score = 0, rounds = 0, maxRounds = 5;
-    var boats;
+    var score = 0, rounds = 0, maxRounds = 8;
+    var boats, roundActive;
 
     function mkBoats() {
-      var opts = [charData.char];
-      var all = chars.filter(function(c){ return c.char !== charData.char; });
-      shuffleArray(all);
-      for (var i = 0; i < 4 && i < all.length; i++) opts.push(all[i].char);
-      opts = shuffleArray(opts);
+      roundActive = true;
+      var allDistractors = chars.filter(function(c){ return c.char !== charData.char; });
+      shuffleArray(allDistractors);
+
+      // 5条船：1条目标 + 4条干扰，保证目标一定出现
+      var boatChars = [];
+      // 随机选目标位置
+      var targetPos = Math.floor(Math.random() * 5);
+      for (var i = 0; i < 5; i++) {
+        if (i === targetPos) {
+          boatChars.push({ char: charData.char, isTarget: true });
+        } else {
+          var idx = i < targetPos ? i : i - 1;
+          boatChars.push({ char: allDistractors[idx].char, isTarget: false });
+        }
+      }
+      shuffleArray(boatChars);
+
       var bs = [];
-      for (var j = 0; j < opts.length; j++) {
+      var direction = rounds % 2 === 0 ? 'left' : 'right'; // 交替方向
+      for (var j = 0; j < boatChars.length; j++) {
+        // 分散在不同高度
+        var topPct = 5 + j * 20 + Math.random() * 5;
         bs.push({
-          char: opts[j], isTarget: opts[j] === charData.char,
-          top: 5 + Math.random()*38, left: 2 + j*20 + Math.random()*6,
-          animDelay: Math.random()*2.5, hit: false
+          char: boatChars[j].char,
+          isTarget: boatChars[j].isTarget,
+          top: topPct,
+          direction: direction,
+          hit: false
         });
       }
       return bs;
@@ -325,26 +343,33 @@ function renderLearn(root, params) {
     boats = mkBoats();
 
     function draw() {
+      var speedClass = rounds >= 5 ? 'sail-fast' : '';
       var h = '<div class="lian-scene" id="lian-scene">';
       h += '<div class="sea-waves"></div>';
+
       boats.forEach(function(b,i){
         if (b.hit) return;
-        h += '<div class="sailboat" id="b'+i+'" style="top:'+b.top+'%;left:'+b.left+'%;animation-delay:-'+b.animDelay+'s"><div class="boat-char">'+b.char+'</div><div class="sail"></div><div class="hull"></div></div>';
+        var dirClass = (i % 2 === 0) ? 'sail-left' : 'sail-right';
+        h += '<div class="sailboat '+dirClass+' '+speedClass+'" id="b'+i+'" style="top:'+b.top+'%"><div class="boat-char">'+b.char+'</div><div class="sail"></div><div class="hull"></div></div>';
       });
+
       h += '<div class="cannon" id="cannon"><div class="barrel"></div><div class="base"></div><div class="wheel"></div></div>';
-      h += '<div class="lian-prompt">🎯 开炮打中带"<span style="color:#FFD93D;font-size:18px">'+charData.char+'</span>"的帆船！</div>';
-      h += '<div class="lian-score">🏆 <span id="ls">'+score+'</span>/'+maxRounds+'</div>';
+      h += '<div class="lian-prompt">🎯 开炮打 "<span style="color:#FFD93D;font-size:22px">'+charData.char+'</span>" ！</div>';
+      h += '<div class="lian-score">⭐ <span id="ls">'+score+'</span> / '+maxRounds+'</div>';
       h += '</div>';
-      h += '<div style="text-align:center;margin-top:8px"><button class="btn-cartoon orange" data-action="go-next">学会啦 → 下一个字</button></div>';
+      h += '<div style="text-align:center;margin:6px 0;display:flex;gap:8px;justify-content:center">';
+      h += '<span style="background:rgba(255,255,255,0.9);padding:4px 10px;border-radius:12px;font-size:13px;font-weight:700">第<span id="rd-num">'+(rounds+1)+'</span>/'+maxRounds+'轮</span>';
+      h += '<button class="btn-cartoon orange small" data-action="go-next">学会啦 → 下一个字</button>';
+      h += '</div>';
       box.innerHTML = h;
 
-      // 绑定帆船
+      // 绑定帆船点击
       boats.forEach(function(b,i){
         if (b.hit) return;
         var el = document.getElementById('b'+i);
         if (!el) return;
         el.onclick = function(){
-          if (b.hit) return;
+          if (b.hit || !roundActive) return;
           b.hit = true;
           fireCannon(b, el);
         };
@@ -352,70 +377,101 @@ function renderLearn(root, params) {
     }
 
     function fireCannon(boat, el) {
+      roundActive = false;
       var scene = document.getElementById('lian-scene');
       if (!scene) return;
       var sr = scene.getBoundingClientRect();
       var cn = document.getElementById('cannon');
-      var cr = cn ? cn.getBoundingClientRect() : {left: sr.left+sr.width/2, top: sr.top+sr.height*0.7};
+      var cr = cn ? cn.getBoundingClientRect() : {left: sr.left+sr.width/2, top: sr.top+sr.height*0.75};
       var br = el.getBoundingClientRect();
 
+      // 炮弹
       var ball = document.createElement('div');
       ball.className = 'cannonball';
-      ball.style.left = (cr.left + cr.width/2 - sr.left) + 'px';
-      ball.style.top = (cr.top - sr.top) + 'px';
+      ball.style.cssText = 'width:14px;height:14px;left:'+(cr.left+cr.width/2-sr.left-7)+'px;top:'+(cr.top-sr.top-7)+'px;';
       scene.appendChild(ball);
 
+      // 开炮闪光
+      var flash = document.createElement('div');
+      flash.style.cssText = 'position:absolute;width:30px;height:30px;background:#FFD93D;border-radius:50%;left:'+(cr.left+cr.width/2-sr.left-15)+'px;top:'+(cr.top-sr.top-15)+'px;z-index:16;pointer-events:none;animation:splash-pop 0.3s ease-out forwards';
+      scene.appendChild(flash);
+      setTimeout(function(){ if (flash.parentNode) flash.parentNode.removeChild(flash); }, 300);
+
       setTimeout(function(){
-        ball.style.transition = 'all 0.25s ease-in';
-        ball.style.left = (br.left + br.width/2 - sr.left) + 'px';
-        ball.style.top = (br.top + br.height/2 - sr.top) + 'px';
+        ball.style.transition = 'all 0.3s cubic-bezier(0.25,0.1,0.25,1)';
+        ball.style.left = (br.left+br.width/2-sr.left-7)+'px';
+        ball.style.top = (br.top+br.height/2-sr.top-7)+'px';
       }, 30);
 
       setTimeout(function(){
         if (ball.parentNode) ball.parentNode.removeChild(ball);
 
-        var sp = document.createElement('div');
-        sp.className = 'splash';
-        sp.textContent = boat.isTarget ? '💥' : '💦';
-        sp.style.left = (br.left + br.width/2 - 18 - sr.left) + 'px';
-        sp.style.top = (br.top - sr.top) + 'px';
-        scene.appendChild(sp);
-        setTimeout(function(){ if (sp.parentNode) sp.parentNode.removeChild(sp); }, 600);
-
         if (boat.isTarget) {
+          // 命中！爆炸效果
+          for (var p = 0; p < 5; p++) {
+            (function(delay){
+              var particle = document.createElement('div');
+              particle.className = 'splash';
+              particle.textContent = ['💥','⭐','✨','🔥','💫'][delay];
+              particle.style.cssText = 'left:'+(br.left+br.width/2-25+Math.random()*30-sr.left)+'px;top:'+(br.top-10+Math.random()*20-sr.top)+'px;animation-delay:'+(delay*0.08)+'s';
+              scene.appendChild(particle);
+              setTimeout(function(){ if (particle.parentNode) particle.parentNode.removeChild(particle); }, 800);
+            })(p);
+          }
+
           score++;
           var lsEl = document.getElementById('ls');
           if (lsEl) lsEl.textContent = score;
-          el.style.transform = 'rotate(90deg) translateY(20px)';
+          // 沉船动画
+          el.style.transition = 'all 0.8s ease-in';
+          el.style.transform = 'rotate(120deg) translateY(40px) scale(0.5)';
           el.style.opacity = '0';
-          App.playSound('correct'); App.showStarAnimation(1);
+          App.playSound('correct');
+          App.showStarAnimation(1);
           rounds++;
+
           if (rounds >= maxRounds) {
-            finishGame();
+            setTimeout(finishGame, 600);
           } else {
-            setTimeout(function(){ boats = mkBoats(); draw(); }, 700);
+            setTimeout(function(){
+              boats = mkBoats();
+              draw();
+            }, 900);
           }
         } else {
+          // 打偏了
+          var sp = document.createElement('div');
+          sp.className = 'splash';
+          sp.textContent = '💦';
+          sp.style.left = (br.left+br.width/2-20-sr.left)+'px';
+          sp.style.top = (br.top-5-sr.top)+'px';
+          scene.appendChild(sp);
+          setTimeout(function(){ if (sp.parentNode) sp.parentNode.removeChild(sp); }, 600);
+
+          // 船摇晃
           el.style.animation = 'none'; el.offsetHeight;
-          el.style.animation = 'wrong-shake 0.4s ease-in-out';
+          el.style.animation = 'wrong-shake 0.5s ease-in-out';
           App.playSound('wrong');
-          setTimeout(function(){ el.style.animation = ''; boat.hit = false; }, 400);
+          setTimeout(function(){
+            el.style.animation = '';
+            boat.hit = false;
+            roundActive = true;
+          }, 500);
         }
-      }, 280);
+      }, 320);
     }
 
     function finishGame() {
       updateCharProgress(charData.id, 'practiced', true);
       updateCharProgress(charData.id, 'practiceScore', score);
-      var stars = score >= 5 ? 3 : score >= 3 ? 2 : 1;
+      var stars = score >= 7 ? 3 : score >= 5 ? 2 : 1;
       if (stars > (progress.stars || 0)) updateCharProgress(charData.id, 'stars', stars);
 
-      setTimeout(function(){
-        App.playSound('complete'); App.showStarAnimation(stars);
-        App.showDialog('游戏结束！🎉',
-          score >= 5 ? '⭐⭐⭐' : score >= 3 ? '⭐⭐' : '⭐',
-          '命中 '+score+'/'+maxRounds+' 次！', '继续', goNext);
-      }, 400);
+      App.playSound('complete'); App.showStarAnimation(stars);
+      App.showDialog('游戏结束！🎉',
+        score >= 7 ? '⭐⭐⭐' : score >= 5 ? '⭐⭐' : '⭐',
+        '命中 '+score+' / '+maxRounds+' 次！\n真厉害！',
+        '继续', goNext);
     }
 
     draw();
