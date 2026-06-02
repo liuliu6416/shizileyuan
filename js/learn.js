@@ -132,7 +132,9 @@ function renderLearn(root, params) {
 
   function afterRender(step) {
     if (step === 0) {
-      setTimeout(function(){ ChineseTTS.speakChar(charData.char); }, 400);
+      // 拟物动画序列
+      setTimeout(function(){ startMorphAnimation(); }, 300);
+      setTimeout(function(){ ChineseTTS.speakChar(charData.char); }, 1200);
     }
     if (step === 1) {
       duReadCount = 0;
@@ -150,32 +152,103 @@ function renderLearn(root, params) {
     }
   }
 
-  // ===== 步骤0 HTML：认 =====
+  // ===== 步骤0 HTML：认（全屏大字+拟物动画） =====
   function getRenHTML() {
     var wHtml = '';
     charData.words.forEach(function(w){
       wHtml += '<div class="ren-word-row" data-action="speak-word" data-word="'+w.word+'"><span>'+w.word+'</span><span class="rw-py">'+w.pinyin+'</span></div>';
     });
 
-    var emojiH = '';
+    // 拟物动画：emoji渐变为汉字
+    var morphHTML = '';
     if (charData.emoji && charData.emoji.length <= 4) {
-      emojiH = '<div class="ren-emoji">'+charData.emoji+'</div>';
+      morphHTML =
+        '<div class="morph-stage" id="morph-stage">'+
+          '<div class="morph-emoji" id="morph-emoji">'+charData.emoji+'</div>'+
+          '<div class="morph-char" id="morph-char">'+charData.char+'</div>'+
+        '</div>';
     } else {
+      // 没有emoji的字：气泡+字
       var cl = ['#FFD93D,#FF6B6B','#4ECDC4,#45B7D1','#A29BFE,#6C5CE7','#FD79A8,#E84393'];
       var c = cl[charData.id % cl.length];
-      emojiH = '<div class="illus-bubble" style="background:linear-gradient(135deg,'+c+')"><span class="bubble-char">'+charData.char+'</span></div>';
+      morphHTML =
+        '<div class="morph-stage" id="morph-stage">'+
+          '<div class="morph-emoji" id="morph-emoji" style="width:160px;height:160px;border-radius:50%;background:linear-gradient(135deg,'+c+');margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:70px;color:white;font-weight:900">'+charData.char+'</div>'+
+          '<div class="morph-char" id="morph-char">'+charData.char+'</div>'+
+        '</div>';
     }
 
-    return '<div class="ren-layout">'+
-      '<div class="ren-left">'+emojiH+'<div class="ren-char-big">'+charData.char+'</div></div>'+
-      '<div class="ren-right">'+
-        '<div class="ren-pinyin">'+charData.pinyin+'</div>'+
-        '<button class="speak-btn" data-action="speak-char">🔊 听发音</button>'+
-        '<div class="ren-words-box"><h4>📝 组词（点击听发音）</h4>'+wHtml+'</div>'+
-        '<div class="ren-sentence">'+charData.sentences[0]+'</div>'+
-        '<button class="btn-cartoon" data-action="go-next">学会啦 → 去读</button>'+
+    return '<div class="ren-full">'+
+      // 背景装饰粒子
+      '<div class="ren-particles" id="ren-particles"></div>'+
+      // 拟物动画区
+      morphHTML +
+      // 拼音
+      '<div class="ren-pinyin-row">'+
+        '<span class="ren-pinyin-big">'+charData.pinyin+'</span>'+
+        '<button class="speak-btn" data-action="speak-char">🔊</button>'+
       '</div>'+
+      // 组词
+      '<div class="ren-words-row" id="ren-words-row">'+
+        '<div class="ren-words-box"><h4>📝 组词</h4>'+wHtml+'</div>'+
+        '<div class="ren-sentence">'+charData.sentences[0]+'</div>'+
+      '</div>'+
+      // 按钮
+      '<button class="btn-cartoon" data-action="go-next" style="margin:6px auto 0;display:block">学会啦 → 去读</button>'+
     '</div>';
+  }
+
+  // 拟物动画：emoji → 汉字
+  function startMorphAnimation() {
+    var stage = document.getElementById('morph-stage');
+    var emoji = document.getElementById('morph-emoji');
+    var charEl = document.getElementById('morph-char');
+    if (!stage || !charEl) return;
+
+    // 阶段1: emoji弹跳出现（0-0.8s）
+    if (emoji) {
+      emoji.style.cssText = 'animation:morph-in 0.8s var(--transition-bounce) forwards';
+    }
+
+    // 阶段2: emoji缩小消失 + 汉字放大出现（0.5-1.4s）
+    setTimeout(function(){
+      if (emoji) emoji.style.cssText = 'animation:morph-out 0.6s ease-in forwards';
+      charEl.style.cssText = 'animation:morph-char-in 0.7s var(--transition-bounce) forwards';
+    }, 600);
+
+    // 阶段3: 汉字就位后持续浮动
+    setTimeout(function(){
+      charEl.style.cssText = 'animation:morph-char-float 2.5s ease-in-out infinite';
+    }, 1400);
+
+    // 阶段4: 组词滑入
+    setTimeout(function(){
+      var row = document.getElementById('ren-words-row');
+      if (row) row.style.cssText = 'animation:slide-up 0.5s ease-out forwards';
+    }, 1500);
+
+    // 背景粒子
+    spawnParticles();
+  }
+
+  function spawnParticles() {
+    var container = document.getElementById('ren-particles');
+    if (!container) return;
+    var emojis = ['⭐','✨','🌸','🌟','💫','🎈','🌈','☁️','🫧','💖'];
+    for (var i = 0; i < 12; i++) {
+      (function(idx){
+        setTimeout(function(){
+          var p = document.createElement('span');
+          p.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+          p.style.cssText = 'position:absolute;font-size:'+(14+Math.random()*20)+'px;'+
+            'left:'+(Math.random()*90)+'%;top:'+(Math.random()*80)+'%;'+
+            'opacity:0;animation:particle-float '+(2+Math.random()*3)+'s ease-in-out '+(Math.random()*1)+'s forwards;'+
+            'pointer-events:none';
+          container.appendChild(p);
+          setTimeout(function(){ if (p.parentNode) p.parentNode.removeChild(p); }, 4000);
+        }, idx*100);
+      })(i);
+    }
   }
 
   // ===== 步骤1 HTML：读 =====

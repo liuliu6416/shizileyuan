@@ -188,46 +188,95 @@ html,body{
 /* 步骤内容区 */
 #step-box{position:relative}
 
-/* ===== 步骤1：认（左右分栏） ===== */
-.ren-layout{
-  display:flex;gap:16px;align-items:stretch;
-}
-.ren-left{
-  flex:1;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;background:white;border-radius:var(--radius-lg);
-  box-shadow:var(--shadow-lg);padding:12px;min-width:0;
-}
-.ren-char-big{
-  font-size:clamp(80px,14vw,180px);font-weight:900;line-height:1;
-  animation:char-pop 0.5s var(--transition-bounce);
-}
-@keyframes char-pop{
-  from{transform:scale(0) rotate(-15deg);opacity:0}
-  to{transform:scale(1) rotate(0);opacity:1}
-}
-.ren-emoji{font-size:clamp(50px,8vw,100px);animation:emoji-float 2s ease-in-out infinite}
-@keyframes emoji-float{
-  0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}
+/* ===== 步骤1：认（全屏大字+拟物动画） ===== */
+.ren-full{
+  display:flex;flex-direction:column;align-items:center;
+  height:100%;padding:4px 0;gap:4px;
+  position:relative;overflow:hidden;
 }
 
-.ren-right{
-  flex:1;display:flex;flex-direction:column;gap:6px;
-  justify-content:center;min-width:0;overflow-y:auto;
+/* 拟物动画舞台 */
+.morph-stage{
+  position:relative;flex:1;width:100%;
+  display:flex;align-items:center;justify-content:center;
+  min-height:0;
 }
-.ren-pinyin{font-size:24px;font-weight:800;color:var(--color-sky);text-align:center;letter-spacing:3px}
+.morph-emoji{
+  font-size:clamp(100px,18vw,200px);
+  line-height:1;text-align:center;
+  position:absolute;z-index:2;
+}
+.morph-char{
+  font-size:clamp(120px,22vw,260px);
+  font-weight:900;line-height:1;text-align:center;
+  color:var(--color-text);
+  position:absolute;z-index:3;
+  opacity:0;transform:scale(0.3);
+}
+
+/* 拟物动画关键帧 */
+@keyframes morph-in{
+  0%{transform:scale(0) rotate(-30deg);opacity:0}
+  60%{transform:scale(1.15) rotate(5deg);opacity:1}
+  100%{transform:scale(1) rotate(0);opacity:1}
+}
+@keyframes morph-out{
+  0%{transform:scale(1);opacity:1}
+  100%{transform:scale(0.2);opacity:0}
+}
+@keyframes morph-char-in{
+  0%{transform:scale(0.3);opacity:0}
+  70%{transform:scale(1.08);opacity:1}
+  100%{transform:scale(1);opacity:1}
+}
+@keyframes morph-char-float{
+  0%,100%{transform:translateY(0) scale(1)}
+  50%{transform:translateY(-6px) scale(1.02)}
+}
+
+/* 拼音行 */
+.ren-pinyin-row{
+  display:flex;align-items:center;gap:10px;
+  z-index:5;flex-shrink:0;
+}
+.ren-pinyin-big{
+  font-size:26px;font-weight:800;color:var(--color-sky);
+  letter-spacing:4px;
+}
+
+/* 组词行 */
+.ren-words-row{
+  opacity:0;z-index:5;flex-shrink:0;
+  display:flex;align-items:center;gap:10px;
+}
 .ren-words-box{
   background:#F8FBFF;border-radius:var(--radius-md);
-  border:2px solid #E0EBF5;padding:8px 12px;
+  border:2px solid #E0EBF5;padding:6px 12px;
 }
-.ren-words-box h4{font-size:13px;color:var(--color-text-light);margin-bottom:4px}
+.ren-words-box h4{font-size:12px;color:var(--color-text-light);margin-bottom:2px}
 .ren-word-row{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:5px 8px;background:white;border-radius:var(--radius-xs);
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:4px 8px;background:white;border-radius:var(--radius-xs);
   margin:2px 0;cursor:pointer;font-weight:700;font-size:16px;
 }
 .ren-word-row:active{background:#E8F4FD}
-.ren-word-row .rw-py{font-size:11px;color:var(--color-text-light)}
+.ren-word-row .rw-py{font-size:10px;color:var(--color-text-light)}
 .ren-sentence{font-size:14px;color:var(--color-text-light);text-align:center}
+
+/* 背景粒子 */
+.ren-particles{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  z-index:1;pointer-events:none;overflow:hidden;
+}
+@keyframes particle-float{
+  0%{opacity:0;transform:translateY(0) scale(0)}
+  30%{opacity:0.7;transform:translateY(-20px) scale(1)}
+  100%{opacity:0;transform:translateY(-80px) scale(0.5)}
+}
+@keyframes slide-up{
+  from{opacity:0;transform:translateY(20px)}
+  to{opacity:1;transform:translateY(0)}
+}
 
 /* 发音按钮 */
 .speak-btn{
