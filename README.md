@@ -2,7 +2,7 @@
 
 专为3-7岁儿童设计的趣味汉字学习PWA应用。
 
-**🌐 在线地址**：`https://liuliu6416.github.io/识字乐园/`
+**🌐 在线地址**：`https://liuliu6416.github.io/shizileyuan/`
 
 ---
 
@@ -33,11 +33,11 @@
 9. 点击 **Commit changes**
 10. 进入仓库 **Settings** → **Pages**
 11. 在 "Source" 中选择 **main** 分支，点击 **Save**
-12. 等待1-2分钟，访问 `https://liuliu6416.github.io/识字乐园/`
+12. 等待1-2分钟，访问 `https://liuliu6416.github.io/shizileyuan/`
 
 ### 方法二：iPhone/iPad 添加到主屏幕
 
-1. 用 **Safari** 打开 `https://liuliu6416.github.io/识字乐园/`
+1. 用 **Safari** 打开 `https://liuliu6416.github.io/shizileyuan/`
 2. 点击底部中间的 **分享按钮**（↑）
 3. 滑动找到 **添加到主屏幕**
 4. 点击 **添加**
