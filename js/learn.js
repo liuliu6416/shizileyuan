@@ -47,10 +47,16 @@ function renderLearn(root, params) {
   // 返回按钮
   document.getElementById('tb-back').onclick = function(){ App.navigateTo('home'); };
 
-  // 步骤指示器
+  // 步骤指示器：点击跳转到下一步（或已完成的步骤）
   for (var ss = 0; ss < 4; ss++) {
     document.getElementById('sdot-'+ss).onclick = (function(s){
-      return function(){ if (s <= currentStep) goStep(s); };
+      return function(){
+        if (s <= currentStep) {
+          // 已完成的步骤：跳转回顾；当前步骤：前进
+          if (s < currentStep) goStep(s);
+          else goNext();
+        }
+      };
     })(ss);
   }
 
@@ -79,8 +85,6 @@ function renderLearn(root, params) {
       clearTianZiGe();
     } else if (action === 'xie-done') {
       finishXie();
-    } else if (action === 'xie-next') {
-      goNext();
     }
   });
 
@@ -134,14 +138,10 @@ function renderLearn(root, params) {
       duReadCount = 0;
       var msgEl = document.getElementById('du-msg');
       if (msgEl) msgEl.textContent = '';
-      var doneBtn = document.getElementById('du-done-btn');
-      if (doneBtn) doneBtn.style.display = 'none';
       setTimeout(function(){ ChineseTTS.speakChar(charData.char); }, 500);
     }
     if (step === 2) {
       xieDone = false;
-      var nextBtn = document.getElementById('xie-next-btn');
-      if (nextBtn) nextBtn.style.display = 'none';
       initXieDemo();
       initTianZiGe();
     }
@@ -186,7 +186,7 @@ function renderLearn(root, params) {
       '<button class="du-read-circle" data-action="du-read">🔊</button>'+
       '<div class="du-hint">👆 点一下，跟着读</div>'+
       '<div class="du-encourage" id="du-msg"></div>'+
-      '<button class="btn-cartoon orange" data-action="du-done" id="du-done-btn" style="display:none">读完啦 → 去写</button>'+
+      '<button class="btn-cartoon orange" data-action="du-done">学会啦 → 去写</button>'+
     '</div>';
   }
 
@@ -195,12 +195,8 @@ function renderLearn(root, params) {
     duReadCount++;
     var msgEl = document.getElementById('du-msg');
     var msgs = ['真棒！再来一遍！👏','声音真响亮！📢','读得真好！💪'];
-    if (duReadCount < 3) {
-      if (msgEl) msgEl.textContent = msgs[duReadCount-1];
-    } else {
-      if (msgEl) msgEl.textContent = '读得太好了！🎉';
-      var doneBtn = document.getElementById('du-done-btn');
-      if (doneBtn) doneBtn.style.display = 'inline-block';
+    if (duReadCount <= 3) {
+      if (msgEl) msgEl.textContent = msgs[Math.min(duReadCount-1, 2)];
     }
   }
 
@@ -221,7 +217,7 @@ function renderLearn(root, params) {
           '<button class="btn-cartoon green small" data-action="xie-done">✅ 写好了</button>'+
         '</div>'+
         '<div class="xie-msg" id="xie-msg"></div>'+
-        '<button class="btn-cartoon orange" data-action="xie-next" id="xie-next-btn" style="display:none">去玩游戏 → 🎯</button>'+
+        '<button class="btn-cartoon orange" data-action="go-next">学会啦 → 去练</button>'+
       '</div>'+
     '</div>';
   }
@@ -298,8 +294,6 @@ function renderLearn(root, params) {
     updateCharProgress(charData.id, 'written', true);
     var m = document.getElementById('xie-msg');
     if (m) m.textContent = '完成啦！🎉';
-    var nb = document.getElementById('xie-next-btn');
-    if (nb) nb.style.display = 'inline-block';
     App.playSound('star'); App.showStarAnimation(2);
   }
 
@@ -341,6 +335,7 @@ function renderLearn(root, params) {
       h += '<div class="lian-prompt">🎯 开炮打中带"<span style="color:#FFD93D;font-size:18px">'+charData.char+'</span>"的帆船！</div>';
       h += '<div class="lian-score">🏆 <span id="ls">'+score+'</span>/'+maxRounds+'</div>';
       h += '</div>';
+      h += '<div style="text-align:center;margin-top:8px"><button class="btn-cartoon orange" data-action="go-next">学会啦 → 下一个字</button></div>';
       box.innerHTML = h;
 
       // 绑定帆船
