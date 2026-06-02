@@ -1,9 +1,7 @@
 /**
- * 识字乐园 - 四步学习页
+ * 识字乐园 - 四步学习页（iPad横屏）
  * 认 → 读 → 写 → 练
- * 每个字依次完成四个步骤
  */
-
 function renderLearn(root, params) {
   var levelId = params.levelId || 1;
   var charIndex = params.charIndex || 0;
@@ -12,520 +10,321 @@ function renderLearn(root, params) {
   if (chars.length === 0) { App.navigateTo('home'); return; }
   if (charIndex < 0) charIndex = 0;
   if (charIndex >= chars.length) {
-    // 本关完成
     App.playSound('complete');
-    App.showDialog('🎉 太棒了！', '🌟', '第' + levelId + '关全部完成！', '下一关', function() {
-      var nextLevel = levelId + 1;
-      if (nextLevel <= getTotalLevels()) {
-        App.navigateTo('learn/' + nextLevel + '/0');
-      } else {
-        App.navigateTo('home');
-      }
+    var nl = levelId + 1;
+    App.showDialog('🎉 太棒了！','🌟','第'+levelId+'关完成！', nl<=getTotalLevels()?'下一关':'回家',function(){
+      App.navigateTo(nl<=getTotalLevels()?'learn/'+nl+'/0':'home');
     });
     return;
   }
 
   var charData = chars[charIndex];
   var progress = getCharProgress(charData.id);
-  var currentStep = 0; // 默认从"认"开始
+  var currentStep = 0;
 
-  // 标记已开始学习
-  if (!progress.learned) updateCharProgress(charData.id, 'learned', true);
+  if (!progress.learned) updateCharProgress(charData.id,'learned',true);
 
-  renderAllSteps();
+  buildPage();
 
-  function renderAllSteps() {
-    var html = '';
+  function buildPage(){
+    var html='<div class="page active">';
 
-    html += '<div class="page active">';
+    // 顶栏
+    html+='<div class="top-bar">';
+    html+='<button class="back-btn" onclick="App.navigateTo(\'home\')">←</button>';
+    html+='<span class="title">'+charData.char+' · 第'+levelId+'关</span>';
+    html+='<span class="progress-dot">'+(charIndex+1)+'/'+chars.length+'</span>';
+    html+='</div>';
 
-    // 顶部栏
-    html += '<div class="top-bar">';
-    html += '<button class="back-btn" onclick="App.navigateTo(\'home\')">←</button>';
-    html += '<span class="title">' + charData.char + ' · 第' + levelId + '关</span>';
-    html += '<span class="progress-dot">' + (charIndex + 1) + '/' + chars.length + '</span>';
-    html += '</div>';
-
-    // 步骤指示器
-    html += '<div class="learn-steps" id="step-indicator">';
-    var stepNames = ['👀 认', '🗣️ 读', '✍️ 写', '🎯 练'];
-    for (var s = 0; s < 4; s++) {
-      var cls = '';
-      if (s === currentStep) cls = ' active';
-      else if (s < currentStep) cls = ' done';
-      html += '<div class="ls-dot' + cls + '" data-step="' + s + '">' + stepNames[s] + '</div>';
+    // 步骤指示
+    html+='<div class="step-indicator" id="step-bar">';
+    var sn=['👀 认','🗣️ 读','✍️ 写','🎯 练'];
+    for(var s=0;s<4;s++){
+      var c='';if(s===currentStep)c=' active';else if(s<currentStep)c=' done';
+      if(s>0)html+='<div class="step-line'+(s<=currentStep?' done':'')+'"></div>';
+      html+='<div class="step-dot'+c+'" data-step="'+s+'">'+sn[s]+'</div>';
     }
-    html += '</div>';
+    html+='</div>';
 
-    // 步骤内容区
-    html += '<div id="step-content" style="flex:1;overflow-y:auto"></div>';
+    // 内容区
+    html+='<div class="step-content" id="step-box"></div>';
 
-    // 底部导航栏
-    html += '<div class="bottom-nav">';
-    html += '<button class="nav-item" onclick="App.navigateTo(\'home\')"><span class="nav-icon">🧭</span>探险</button>';
-    html += '<button class="nav-item active"><span class="nav-icon">📖</span>学字</button>';
-    html += '<button class="nav-item" onclick="App.navigateTo(\'review\')"><span class="nav-icon">🏆</span>宝藏</button>';
-    html += '</div>';
+    html+='</div>';
+    root.innerHTML=html;
 
-    html += '</div>';
-
-    root.innerHTML = html;
-
-    // 绑定步骤点击
-    document.querySelectorAll('.ls-dot').forEach(function(dot) {
-      dot.addEventListener('click', function() {
-        var step = parseInt(this.dataset.step);
-        if (step <= currentStep) {
-          switchStep(step);
-        }
+    // 步骤点击
+    document.querySelectorAll('#step-bar .step-dot').forEach(function(d){
+      d.addEventListener('click',function(){
+        var s=parseInt(this.dataset.step);
+        if(s<=currentStep)switchTo(s);
       });
     });
 
-    // 渲染当前步骤
-    switchStep(currentStep);
+    switchTo(currentStep);
   }
 
-  function switchStep(step) {
-    currentStep = step;
-    var container = document.getElementById('step-content');
-    if (!container) return;
+  function switchTo(step){
+    currentStep=step;
+    var box=document.getElementById('step-box');
+    if(!box)return;
 
-    // 更新步骤指示器
-    var dots = document.querySelectorAll('.ls-dot');
-    dots.forEach(function(d, i) {
-      d.className = 'ls-dot';
-      if (i === step) d.className += ' active';
-      else if (i < step) d.className += ' done';
-    });
+    // 更新指示器
+    var dots=document.querySelectorAll('#step-bar .step-dot');
+    var lines=document.querySelectorAll('#step-bar .step-line');
+    dots.forEach(function(d,i){d.className='step-dot'+(i===step?' active':i<step?' done':'');});
+    lines.forEach(function(l,i){l.className='step-line'+(i<step?' done':'');});
 
-    switch (step) {
-      case 0: renderRen(container); break;
-      case 1: renderDu(container); break;
-      case 2: renderXie(container); break;
-      case 3: renderLian(container); break;
-    }
+    // 渲染步骤
+    box.innerHTML='';
+    if(step===0)stepRen(box);
+    else if(step===1)stepDu(box);
+    else if(step===2)stepXie(box);
+    else if(step===3)stepLian(box);
   }
 
-  function goNextStep() {
-    if (currentStep < 3) {
-      currentStep++;
-      switchStep(currentStep);
-    } else {
-      // 全部完成
-      updateCharProgress(charData.id, 'stars', Math.max(progress.stars || 0, 1));
-      var nextIdx = charIndex + 1;
-      if (nextIdx < chars.length) {
-        App.playSound('complete');
-        App.showStarAnimation(3);
-        App.showDialog('太棒了！🎉', '⭐', charData.char + ' 学完啦！', '下一个字', function() {
-          App.navigateTo('learn/' + levelId + '/' + nextIdx);
-        });
-      } else {
-        App.playSound('complete');
-        App.showStarAnimation(3);
-        App.showDialog('通关！🏆', '🌟', '第' + levelId + '关全部学完！', '回到首页', function() {
-          App.navigateTo('home');
-        });
+  function nextStep(){
+    if(currentStep<3){currentStep++;switchTo(currentStep);}
+    else{
+      updateCharProgress(charData.id,'stars',Math.max(progress.stars||0,1));
+      var ni=charIndex+1;
+      if(ni<chars.length){
+        App.playSound('complete');App.showStarAnimation(3);
+        App.showDialog('太棒了！🎉','⭐',charData.char+' 学完啦！','下一个字',function(){App.navigateTo('learn/'+levelId+'/'+ni);});
+      }else{
+        App.playSound('complete');App.showStarAnimation(3);
+        App.showDialog('通关！🏆','🌟','第'+levelId+'关全部学完！','回到首页',function(){App.navigateTo('home');});
       }
     }
   }
 
-  // ===== 步骤1：认 =====
-  function renderRen(container) {
-    var wordsHtml = '';
-    charData.words.forEach(function(w) {
-      wordsHtml += '<div class="ren-word-item" onclick="ChineseTTS.speakWord(\'' + w.word + '\')">';
-      wordsHtml += '<span class="rw-char">' + w.word + '</span>';
-      wordsHtml += '<span class="rw-pinyin">' + w.pinyin + '</span>';
-      wordsHtml += '</div>';
+  // ==== 步骤1：认 ====
+  function stepRen(box){
+    var wHtml='';
+    charData.words.forEach(function(w){
+      wHtml+='<div class="ren-word-row" onclick="ChineseTTS.speakWord(\''+w.word+'\')"><span>'+w.word+'</span><span class="rw-py">'+w.pinyin+'</span></div>';
     });
 
-    var emojiHtml = '';
-    if (charData.emoji && charData.emoji.length <= 4) {
-      emojiHtml = '<div class="ren-emoji">' + charData.emoji + '</div>';
-    } else {
-      var colors = ['#FFD93D,#FF6B6B', '#4ECDC4,#45B7D1', '#A29BFE,#6C5CE7', '#FD79A8,#E84393'];
-      var c = colors[charData.id % colors.length];
-      emojiHtml = '<div class="illus-bubble" style="background:linear-gradient(135deg,' + c + ')"><span class="bubble-char">' + charData.char + '</span></div>';
+    var emojiH='';
+    if(charData.emoji&&charData.emoji.length<=4){
+      emojiH='<div class="ren-emoji">'+charData.emoji+'</div>';
+    }else{
+      var cl=['#FFD93D,#FF6B6B','#4ECDC4,#45B7D1','#A29BFE,#6C5CE7','#FD79A8,#E84393'];
+      var c=cl[charData.id%cl.length];
+      emojiH='<div class="illus-bubble" style="background:linear-gradient(135deg,'+c+')"><span class="bubble-char">'+charData.char+'</span></div>';
     }
 
-    container.innerHTML =
-      '<div class="ren-container">' +
-        '<div class="ren-char-zone">' +
-          emojiHtml +
-          '<div class="ren-char-big">' + charData.char + '</div>' +
-        '</div>' +
-        '<div class="ren-info-zone">' +
-          '<div class="pinyin-big">' + charData.pinyin + '</div>' +
-          '<button class="speak-btn" onclick="ChineseTTS.speakChar(\'' + charData.char + '\')" style="margin:0 auto">🔊 听发音</button>' +
-          '<div class="ren-words">' +
-            '<h4>📝 组词（点一下听发音）</h4>' +
-            wordsHtml +
-          '</div>' +
-          '<div style="font-size:15px;color:var(--color-text-light);text-align:center">' +
-            charData.sentences[0] +
-          '</div>' +
-          '<button class="btn-cartoon" onclick="goNextStep()" style="margin:0 auto">学会啦，去读一读 →</button>' +
-        '</div>' +
-      '</div>';
+    box.innerHTML=
+    '<div class="ren-layout">'+
+      '<div class="ren-left">'+emojiH+'<div class="ren-char-big">'+charData.char+'</div></div>'+
+      '<div class="ren-right">'+
+        '<div class="ren-pinyin">'+charData.pinyin+'</div>'+
+        '<button class="speak-btn" onclick="ChineseTTS.speakChar(\''+charData.char+'\')" style="margin:0 auto">🔊 听发音</button>'+
+        '<div class="ren-words-box"><h4>📝 组词（点击听发音）</h4>'+wHtml+'</div>'+
+        '<div class="ren-sentence">'+charData.sentences[0]+'</div>'+
+        '<button class="btn-cartoon" onclick="nextStep()" style="margin:0 auto">学会啦 → 去读</button>'+
+      '</div>'+
+    '</div>';
 
-    // 自动播放发音
-    setTimeout(function() { ChineseTTS.speakChar(charData.char); }, 500);
+    setTimeout(function(){ChineseTTS.speakChar(charData.char);},400);
   }
 
-  // ===== 步骤2：读 =====
-  function renderDu(container) {
-    container.innerHTML =
-      '<div class="du-container">' +
-        '<div class="du-char-display">' + charData.char + '</div>' +
-        '<div class="du-pinyin">' + charData.pinyin + '</div>' +
-        '<button class="du-read-btn" id="du-read-btn" title="跟我读">🔊</button>' +
-        '<div style="font-size:16px;color:var(--color-text-light)">👆 点一下，跟着读</div>' +
-        '<div class="du-encourage" id="du-encourage"></div>' +
-        '<button class="btn-cartoon orange" id="du-done-btn" style="display:none" onclick="goNextStep()">我读完啦，去写一写 →</button>' +
-      '</div>';
+  // ==== 步骤2：读 ====
+  function stepDu(box){
+    var count=0;
+    var msgs=['真棒！再来一遍！👏','声音真响亮！📢','读得真好！💪'];
 
-    var readCount = 0;
-    var encourageMsgs = ['真棒！再来一遍！👏', '声音真响亮！📢', '读得真好！再读一次！💪'];
+    box.innerHTML=
+    '<div class="du-layout">'+
+      '<div class="du-char">'+charData.char+'</div>'+
+      '<div class="du-pinyin">'+charData.pinyin+'</div>'+
+      '<button class="du-read-circle" id="du-btn">🔊</button>'+
+      '<div class="du-hint">👆 点一下，跟着读</div>'+
+      '<div class="du-encourage" id="du-msg"></div>'+
+      '<button class="btn-cartoon orange" id="du-done" style="display:none" onclick="nextStep()">读完啦 → 去写</button>'+
+    '</div>';
 
-    document.getElementById('du-read-btn').addEventListener('click', function() {
-      ChineseTTS.speakChar(charData.char);
-      readCount++;
-
-      if (readCount < 3) {
-        document.getElementById('du-encourage').textContent = encourageMsgs[readCount - 1];
-      } else {
-        document.getElementById('du-encourage').textContent = '读得太好了！🎉';
-        document.getElementById('du-done-btn').style.display = 'inline-block';
-      }
+    document.getElementById('du-btn').addEventListener('click',function(){
+      ChineseTTS.speakChar(charData.char);count++;
+      if(count<3){document.getElementById('du-msg').textContent=msgs[count-1];}
+      else{document.getElementById('du-msg').textContent='读得太好了！🎉';document.getElementById('du-done').style.display='inline-block';}
     });
 
-    // 自动读第一遍
-    setTimeout(function() { ChineseTTS.speakChar(charData.char); }, 600);
+    setTimeout(function(){ChineseTTS.speakChar(charData.char);},500);
   }
 
-  // ===== 步骤3：写（田字格） =====
-  function renderXie(container) {
-    container.innerHTML =
-      '<div class="xie-container">' +
-        '<div class="xie-tabs">' +
-          '<button class="xie-tab active" id="xie-demo-tab">📺 看笔画</button>' +
-          '<button class="xie-tab" id="xie-trace-tab">✍️ 描红</button>' +
-        '</div>' +
-        '<div id="xie-demo-area" style="width:260px;height:260px;margin:0 auto;background:white;border-radius:8px;box-shadow:var(--shadow-md)"></div>' +
-        '<div id="xie-trace-area" style="display:none">' +
-          '<div class="tianzige-wrapper">' +
-            '<canvas class="tianzige-canvas" id="tianzige-canvas" width="260" height="260"></canvas>' +
-          '</div>' +
-        '</div>' +
-        '<div class="xie-controls" id="xie-demo-ctrls">' +
-          '<button class="btn-cartoon small" id="xie-play-btn">▶️ 播放</button>' +
-          '<button class="btn-cartoon small orange" id="xie-reset-btn">🔄 重来</button>' +
-        '</div>' +
-        '<div class="xie-controls" id="xie-trace-ctrls" style="display:none">' +
-          '<button class="btn-cartoon small orange" id="xie-clear-btn">🔄 清除</button>' +
-          '<button class="btn-cartoon green small" id="xie-done-btn">✅ 写好了</button>' +
-        '</div>' +
-        '<div class="xie-encourage" id="xie-encourage"></div>' +
-        '<button class="btn-cartoon orange" id="xie-next-btn" style="display:none" onclick="goNextStep()">去玩游戏 → 🎯</button>' +
-      '</div>';
+  // ==== 步骤3：写（田字格） ====
+  function stepXie(box){
+    box.innerHTML=
+    '<div class="xie-layout">'+
+      '<div class="xie-demo-side">'+
+        '<div class="xie-demo-area" id="xie-demo"></div>'+
+        '<div class="xie-btns"><button class="btn-cartoon small" id="xie-play">▶️ 播放</button><button class="btn-cartoon small orange" id="xie-reset">🔄 重来</button></div>'+
+      '</div>'+
+      '<div class="xie-trace-side">'+
+        '<div class="tzgrid-wrap"><canvas class="tzgrid-canvas" id="tz-canvas" width="240" height="240"></canvas></div>'+
+        '<div class="xie-btns"><button class="btn-cartoon small orange" id="xie-clr">🔄 清除</button><button class="btn-cartoon green small" id="xie-ok">✅ 写好了</button></div>'+
+        '<div class="xie-msg" id="xie-msg"></div>'+
+        '<button class="btn-cartoon orange" id="xie-next" style="display:none" onclick="nextStep()">去玩游戏 → 🎯</button>'+
+      '</div>'+
+    '</div>';
 
-    // 初始化笔画动画
-    var writer = null;
-    try {
-      writer = HanziWriter.create('xie-demo-area', charData.char, {
-        width: 260, height: 260, padding: 5,
-        strokeAnimationSpeed: 1.5, delayBetweenStrokes: 350,
-        strokeColor: '#4A90D9', radicalColor: '#FF8C42',
-        outlineColor: '#E0E0E0', showOutline: true, showCharacter: true
-      });
-    } catch(e) {
-      document.getElementById('xie-demo-area').innerHTML =
-        '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:120px;font-weight:900;color:#DDD">' + charData.char + '</div>';
+    // 笔画动画
+    var w=null;
+    try{
+      w=HanziWriter.create('xie-demo',charData.char,{width:220,height:220,padding:5,strokeAnimationSpeed:1.5,delayBetweenStrokes:350,strokeColor:'#4A90D9',radicalColor:'#FF8C42',outlineColor:'#E0E0E0',showOutline:true,showCharacter:true});
+    }catch(e){
+      document.getElementById('xie-demo').innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:100px;font-weight:900;color:#DDD">'+charData.char+'</div>';
     }
+    setTimeout(function(){if(w)w.animateCharacter();},400);
 
-    // 演示控制
-    document.getElementById('xie-play-btn').addEventListener('click', function() {
-      if (writer) writer.animateCharacter();
-    });
-    document.getElementById('xie-reset-btn').addEventListener('click', function() {
-      if (writer) { writer.cancelAnimation(); writer.reset(); }
-    });
+    document.getElementById('xie-play').addEventListener('click',function(){if(w)w.animateCharacter();});
+    document.getElementById('xie-reset').addEventListener('click',function(){if(w){w.cancelAnimation();w.reset();}});
 
-    // 自动播放
-    setTimeout(function() { if (writer) writer.animateCharacter(); }, 500);
+    // 田字格
+    var cv=document.getElementById('tz-canvas');
+    var ctx=cv.getContext('2d');
+    drawTZG(ctx);
 
-    // 模式切换：描红
-    document.getElementById('xie-trace-tab').addEventListener('click', function() {
-      document.getElementById('xie-demo-area').style.display = 'none';
-      document.getElementById('xie-trace-area').style.display = 'block';
-      document.getElementById('xie-demo-ctrls').style.display = 'none';
-      document.getElementById('xie-trace-ctrls').style.display = 'flex';
-      this.classList.add('active');
-      document.getElementById('xie-demo-tab').classList.remove('active');
-      if (writer) { writer.cancelAnimation(); writer.reset(); }
-      initTianZiGe();
-    });
-
-    document.getElementById('xie-demo-tab').addEventListener('click', function() {
-      document.getElementById('xie-demo-area').style.display = 'block';
-      document.getElementById('xie-trace-area').style.display = 'none';
-      document.getElementById('xie-demo-ctrls').style.display = 'flex';
-      document.getElementById('xie-trace-ctrls').style.display = 'none';
-      this.classList.add('active');
-      document.getElementById('xie-trace-tab').classList.remove('active');
-    });
-
-    // 田字格描红
-    function initTianZiGe() {
-      var canvas = document.getElementById('tianzige-canvas');
-      var ctx = canvas.getContext('2d');
-      drawTianZiGe(ctx);
-
-      var drawing = false;
-      var hasDrawn = false;
-
-      canvas.onpointerdown = function(e) {
-        drawing = true; hasDrawn = true;
-        var rect = canvas.getBoundingClientRect();
-        var sx = canvas.width / rect.width, sy = canvas.height / rect.height;
-        ctx.beginPath();
-        ctx.moveTo((e.clientX - rect.left) * sx, (e.clientY - rect.top) * sy);
-        e.preventDefault();
-      };
-      canvas.onpointermove = function(e) {
-        if (!drawing) return;
-        var rect = canvas.getBoundingClientRect();
-        var sx = canvas.width / rect.width, sy = canvas.height / rect.height;
-        ctx.lineTo((e.clientX - rect.left) * sx, (e.clientY - rect.top) * sy);
-        ctx.strokeStyle = '#4A90D9'; ctx.lineWidth = 14;
-        ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-        ctx.stroke();
-        e.preventDefault();
-      };
-      canvas.onpointerup = function() {
-        drawing = false;
-        if (hasDrawn) {
-          document.getElementById('xie-encourage').textContent = '写得真好！✍️';
-        }
-      };
-    }
-
-    function drawTianZiGe(ctx) {
-      ctx.clearRect(0, 0, 260, 260);
-
-      // 白底
-      ctx.fillStyle = '#FFFEF9'; ctx.fillRect(0, 0, 260, 260);
-
+    function drawTZG(c){
+      c.clearRect(0,0,240,240);
+      c.fillStyle='#FFFEF9';c.fillRect(0,0,240,240);
       // 外框
-      ctx.strokeStyle = '#E74C3C'; ctx.lineWidth = 3;
-      ctx.strokeRect(10, 10, 240, 240);
-
+      c.strokeStyle='#E74C3C';c.lineWidth=3;c.strokeRect(8,8,224,224);
       // 十字虚线
-      ctx.setLineDash([5, 5]); ctx.strokeStyle = '#CCC'; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(130, 10); ctx.lineTo(130, 250); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(10, 130); ctx.lineTo(250, 130); ctx.stroke();
-      ctx.setLineDash([]);
-
+      c.setLineDash([4,4]);c.strokeStyle='#CCC';c.lineWidth=1.5;
+      c.beginPath();c.moveTo(120,8);c.lineTo(120,232);c.stroke();
+      c.beginPath();c.moveTo(8,120);c.lineTo(232,120);c.stroke();
       // 对角虚线
-      ctx.setLineDash([3, 6]); ctx.strokeStyle = '#DDD'; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(10, 10); ctx.lineTo(250, 250); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(250, 10); ctx.lineTo(10, 250); ctx.stroke();
-      ctx.setLineDash([]);
-
-      // 半透明描红底字
-      ctx.font = '140px "PingFang SC","Heiti SC","STHeiti",sans-serif';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillStyle = 'rgba(0,0,0,0.06)';
-      ctx.fillText(charData.char, 130, 130);
+      c.setLineDash([3,5]);c.strokeStyle='#DDD';c.lineWidth=1;
+      c.beginPath();c.moveTo(8,8);c.lineTo(232,232);c.stroke();
+      c.beginPath();c.moveTo(232,8);c.lineTo(8,232);c.stroke();
+      c.setLineDash([]);
+      // 描红底字
+      c.font='130px "PingFang SC","Heiti SC","STHeiti",sans-serif';c.textAlign='center';c.textBaseline='middle';
+      c.fillStyle='rgba(0,0,0,0.06)';c.fillText(charData.char,120,120);
     }
 
-    // 清除按钮
-    document.getElementById('xie-clear-btn').addEventListener('click', function() {
-      var canvas = document.getElementById('tianzige-canvas');
-      drawTianZiGe(canvas.getContext('2d'));
-      document.getElementById('xie-encourage').textContent = '';
-    });
+    var drawing=false,hasDrawn=false;
+    cv.onpointerdown=function(e){
+      drawing=true;hasDrawn=true;
+      var r=cv.getBoundingClientRect(),sx=cv.width/r.width,sy=cv.height/r.height;
+      ctx.beginPath();ctx.moveTo((e.clientX-r.left)*sx,(e.clientY-r.top)*sy);
+      e.preventDefault();
+    };
+    cv.onpointermove=function(e){
+      if(!drawing)return;
+      var r=cv.getBoundingClientRect(),sx=cv.width/r.width,sy=cv.height/r.height;
+      ctx.lineTo((e.clientX-r.left)*sx,(e.clientY-r.top)*sy);
+      ctx.strokeStyle='#4A90D9';ctx.lineWidth=12;ctx.lineCap='round';ctx.lineJoin='round';
+      ctx.stroke();e.preventDefault();
+    };
+    cv.onpointerup=function(){drawing=false;if(hasDrawn)document.getElementById('xie-msg').textContent='写得真好！✍️';};
 
-    // 完成按钮
-    document.getElementById('xie-done-btn').addEventListener('click', function() {
-      updateCharProgress(charData.id, 'written', true);
-      document.getElementById('xie-encourage').textContent = '完成啦！🎉';
-      document.getElementById('xie-next-btn').style.display = 'inline-block';
-      App.playSound('star');
-      App.showStarAnimation(2);
+    document.getElementById('xie-clr').addEventListener('click',function(){drawTZG(ctx);document.getElementById('xie-msg').textContent='';hasDrawn=false;});
+    document.getElementById('xie-ok').addEventListener('click',function(){
+      updateCharProgress(charData.id,'written',true);
+      document.getElementById('xie-msg').textContent='完成啦！🎉';
+      document.getElementById('xie-next').style.display='inline-block';
+      App.playSound('star');App.showStarAnimation(2);
     });
   }
 
-  // ===== 步骤4：练（大炮打帆船） =====
-  function renderLian(container) {
-    var score = 0;
-    var rounds = 0;
-    var maxRounds = 5;
-    var targetChar = charData.char;
+  // ==== 步骤4：练（大炮打帆船） ====
+  function stepLian(box){
+    var score=0,rounds=0,maxRounds=5,targetChar=charData.char;
 
-    // 生成帆船数据：1个正确目标 + 3-4个干扰
-    function generateBoats() {
-      var options = [targetChar];
-      var allChars = chars.filter(function(c) { return c.char !== targetChar; });
-      shuffleArray(allChars);
-      for (var i = 0; i < 4 && i < allChars.length; i++) {
-        options.push(allChars[i].char);
+    function mkBoats(){
+      var opts=[targetChar];
+      var all=chars.filter(function(c){return c.char!==targetChar;});
+      shuffleArray(all);
+      for(var i=0;i<4&&i<all.length;i++)opts.push(all[i].char);
+      opts=shuffleArray(opts);
+      var bs=[];
+      for(var j=0;j<opts.length;j++){
+        bs.push({char:opts[j],isTarget:opts[j]===targetChar,top:4+Math.random()*40,left:2+j*20+Math.random()*6,animDelay:Math.random()*2.5,hit:false});
       }
-      options = shuffleArray(options);
-
-      var boats = [];
-      for (var i = 0; i < options.length; i++) {
-        boats.push({
-          char: options[i],
-          isTarget: options[i] === targetChar,
-          top: 5 + Math.random() * 35, // % from top
-          left: 3 + i * 20 + Math.random() * 5, // % from left
-          animDelay: Math.random() * 2,
-          hit: false
-        });
-      }
-      return boats;
+      return bs;
     }
+    var boats=mkBoats();
 
-    var boats = generateBoats();
-
-    function renderGame() {
-      var html = '';
-      html += '<div class="lian-container" id="lian-game">';
-
-      // 天空 + 海面
-      html += '<div class="sea-waves"></div>';
-
-      // 帆船
-      boats.forEach(function(boat, idx) {
-        if (boat.hit) return;
-        html += '<div class="sailboat" id="boat-' + idx + '" style="top:' + boat.top + '%;left:' + boat.left + '%;animation-delay:-' + boat.animDelay + 's">';
-        html += '<div class="boat-char">' + boat.char + '</div>';
-        html += '<div class="sail"></div>';
-        html += '<div class="hull"></div>';
-        html += '</div>';
+    function draw(){
+      var h='<div class="lian-scene" id="lian-scene">';
+      h+='<div class="sea-waves"></div>';
+      boats.forEach(function(b,i){
+        if(b.hit)return;
+        h+='<div class="sailboat" id="b'+i+'" style="top:'+b.top+'%;left:'+b.left+'%;animation-delay:-'+b.animDelay+'s"><div class="boat-char">'+b.char+'</div><div class="sail"></div><div class="hull"></div></div>';
       });
+      h+='<div class="cannon" id="cannon"><div class="barrel"></div><div class="base"></div><div class="wheel"></div></div>';
+      h+='<div class="lian-prompt">🎯 开炮打中带"<span style="color:#FFD93D;font-size:18px">'+targetChar+'</span>"的帆船！</div>';
+      h+='<div class="lian-score">🏆 <span id="ls">'+score+'</span>/'+maxRounds+'</div>';
+      h+='</div>';
+      box.innerHTML=h;
 
-      // 大炮
-      html += '<div class="cannon" id="cannon">';
-      html += '<div class="barrel"></div>';
-      html += '<div class="base"></div>';
-      html += '<div class="wheel"></div>';
-      html += '</div>';
-
-      // 提示文字
-      html += '<div class="lian-prompt">🎯 开炮打中带 "<span style="color:#FFD93D;font-size:20px">' + targetChar + '</span>" 的帆船！</div>';
-      html += '<div class="lian-score-board">🏆 <span id="lian-score">' + score + '</span> / ' + maxRounds + '</div>';
-
-      html += '</div>';
-
-      document.getElementById('step-content').innerHTML = html;
-
-      // 绑定帆船点击
-      boats.forEach(function(boat, idx) {
-        if (boat.hit) return;
-        var boatEl = document.getElementById('boat-' + idx);
-        if (!boatEl) return;
-
-        boatEl.addEventListener('click', function() {
-          if (boat.hit) return;
-          boat.hit = true;
-          fireCannon(boat, boatEl, idx);
+      boats.forEach(function(b,i){
+        if(b.hit)return;
+        var el=document.getElementById('b'+i);
+        if(!el)return;
+        el.addEventListener('click',function(){
+          if(b.hit)return;b.hit=true;
+          fire(b,el,i);
         });
       });
     }
 
-    function fireCannon(boat, boatEl, idx) {
-      // 炮弹动画
-      var cannon = document.getElementById('cannon');
-      var cannonRect = cannon ? cannon.getBoundingClientRect() : { left: window.innerWidth/2, top: window.innerHeight * 0.7 };
-      var boatRect = boatEl.getBoundingClientRect();
+    function fire(boat,el,idx){
+      var cn=document.getElementById('cannon');
+      var cr=cn?cn.getBoundingClientRect():{left:box.offsetWidth/2,top:box.offsetHeight*0.7};
+      var br=el.getBoundingClientRect();
+      var scene=document.getElementById('lian-scene');
+      var sr=scene?scene.getBoundingClientRect():{left:0,top:0};
 
-      var ball = document.createElement('div');
-      ball.className = 'cannonball';
-      ball.style.left = cannonRect.left + cannonRect.width/2 + 'px';
-      ball.style.top = cannonRect.top + 'px';
-      document.getElementById('lian-game').appendChild(ball);
+      var ball=document.createElement('div');ball.className='cannonball';
+      ball.style.left=(cr.left+cr.width/2-sr.left)+'px';ball.style.top=(cr.top-sr.top)+'px';
+      scene.appendChild(ball);
 
-      // 炮弹飞向帆船
-      setTimeout(function() {
-        ball.style.transition = 'all 0.3s ease-in';
-        ball.style.left = boatRect.left + boatRect.width/2 + 'px';
-        ball.style.top = boatRect.top + boatRect.height/2 + 'px';
-      }, 50);
+      setTimeout(function(){
+        ball.style.transition='all 0.25s ease-in';
+        ball.style.left=(br.left+br.width/2-sr.left)+'px';ball.style.top=(br.top+br.height/2-sr.top)+'px';
+      },30);
 
-      // 命中效果
-      setTimeout(function() {
-        if (ball.parentNode) ball.parentNode.removeChild(ball);
+      setTimeout(function(){
+        if(ball.parentNode)ball.parentNode.removeChild(ball);
 
-        // 水花
-        var splash = document.createElement('div');
-        splash.className = 'splash';
-        splash.textContent = boat.isTarget ? '💥' : '💦';
-        splash.style.left = boatRect.left + boatRect.width/2 - 20 + 'px';
-        splash.style.top = boatRect.top + 'px';
-        document.getElementById('lian-game').appendChild(splash);
-        setTimeout(function() { if (splash.parentNode) splash.parentNode.removeChild(splash); }, 600);
+        var sp=document.createElement('div');sp.className='splash';
+        sp.textContent=boat.isTarget?'💥':'💦';
+        sp.style.left=(br.left+br.width/2-18-sr.left)+'px';sp.style.top=(br.top-sr.top)+'px';
+        scene.appendChild(sp);
+        setTimeout(function(){if(sp.parentNode)sp.parentNode.removeChild(sp);},600);
 
-        if (boat.isTarget) {
-          // 命中！
-          score++;
-          document.getElementById('lian-score').textContent = score;
-          // 帆船沉没
-          boatEl.style.transform = 'rotate(90deg) translateY(30px)';
-          boatEl.style.opacity = '0';
-          App.playSound('correct');
-          App.showStarAnimation(1);
-
+        if(boat.isTarget){
+          score++;document.getElementById('ls').textContent=score;
+          el.style.transform='rotate(90deg) translateY(20px)';el.style.opacity='0';
+          App.playSound('correct');App.showStarAnimation(1);
           rounds++;
-          if (rounds >= maxRounds) {
-            finishLianGame();
-          } else {
-            // 重新生成帆船
-            setTimeout(function() {
-              boats = generateBoats();
-              renderGame();
-            }, 800);
-          }
-        } else {
-          // 打错了
-          boatEl.style.animation = 'wrong-shake 0.4s ease-in-out';
+          if(rounds>=maxRounds)finish();
+          else{setTimeout(function(){boats=mkBoats();draw();},700);}
+        }else{
+          el.style.animation='none';el.offsetHeight;el.style.animation='wrong-shake 0.4s ease-in-out';
           App.playSound('wrong');
-          setTimeout(function() { boatEl.style.animation = ''; boat.hit = false; }, 400);
+          setTimeout(function(){el.style.animation='';boat.hit=false;},400);
         }
-      }, 350);
+      },280);
     }
 
-    function finishLianGame() {
-      updateCharProgress(charData.id, 'practiced', true);
-      updateCharProgress(charData.id, 'practiceScore', score);
+    function finish(){
+      updateCharProgress(charData.id,'practiced',true);
+      updateCharProgress(charData.id,'practiceScore',score);
+      var stars=score>=5?3:score>=3?2:1;
+      if(stars>(progress.stars||0))updateCharProgress(charData.id,'stars',stars);
 
-      var stars = score >= 5 ? 3 : score >= 3 ? 2 : 1;
-      if (stars > (progress.stars || 0)) {
-        updateCharProgress(charData.id, 'stars', stars);
-      }
-
-      setTimeout(function() {
-        App.playSound('complete');
-        App.showStarAnimation(stars);
-        App.showDialog('游戏结束！🎉',
-          score >= 5 ? '⭐⭐⭐' : score >= 3 ? '⭐⭐' : '⭐',
-          '命中 ' + score + ' / ' + maxRounds + ' 次！',
-          '继续', goNextStep);
-      }, 500);
+      setTimeout(function(){
+        App.playSound('complete');App.showStarAnimation(stars);
+        App.showDialog('游戏结束！🎉',score>=5?'⭐⭐⭐':score>=3?'⭐⭐':'⭐','命中 '+score+'/'+maxRounds+' 次！','继续',nextStep);
+      },400);
     }
 
-    renderGame();
+    draw();
   }
 }
 
-// 洗牌函数（全局复用）
-function shuffleArray(arr) {
-  var a = arr.slice();
-  for (var i = a.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
-    var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
-  }
-  return a;
-}
+function shuffleArray(a){var r=a.slice();for(var i=r.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=r[i];r[i]=r[j];r[j]=t;}return r;}
