@@ -62,11 +62,11 @@ var App = {
       case 'learn':
         this.currentParams = { levelId: parseInt(params[0]) || AppState.unlockedLevel, charIndex: parseInt(params[1]) || 0 };
         break;
+      // practice和write现在整合到learn页面中，重定向
       case 'practice':
-        this.currentParams = { levelId: parseInt(params[0]) || AppState.unlockedLevel, charIndex: parseInt(params[1]) || 0 };
-        break;
       case 'write':
         this.currentParams = { levelId: parseInt(params[0]) || AppState.unlockedLevel, charIndex: parseInt(params[1]) || 0 };
+        page = 'learn';
         break;
       case 'review':
         this.currentParams = {};

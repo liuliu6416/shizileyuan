@@ -5,7 +5,7 @@
   "start_url": ".",
   "scope": ".",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "landscape",
   "theme_color": "#FF6B6B",
   "background_color": "#FFF8E7",
   "categories": ["education", "kids"],

@@ -3,7 +3,7 @@
  * 负责离线缓存：首次安装后，所有学习内容可离线使用
  */
 
-const CACHE_NAME = 'shizileyuan-v3';
+const CACHE_NAME = 'shizileyuan-v4';
 
 // 预缓存列表：所有核心文件
 const PRE_CACHE_URLS = [
