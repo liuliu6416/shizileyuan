@@ -25,8 +25,10 @@
   --shadow-button: 0 4px 12px rgba(255,107,107,0.3);
   --shadow-float: 0 8px 30px rgba(0,0,0,0.10);
 
-  --font-cartoon: 'Ma Shan Zheng', 'ZCOOL QingKe HuangYou', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  --font-body: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+  /* 系统字体：iOS用PingFang（圆润清晰），Android/Mac用默认黑体 */
+  /* 不加Google CDN，国内直接访问不卡顿 */
+  --font-cartoon: "PingFang SC", "Heiti SC", "STHeiti", "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
+  --font-body: "PingFang SC", "Heiti SC", "STHeiti", "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
 
   --transition-bounce: cubic-bezier(0.68, -0.55, 0.27, 1.55);
   --safe-top: env(safe-area-inset-top, 0px);

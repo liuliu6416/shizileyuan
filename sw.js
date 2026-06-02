@@ -3,7 +3,7 @@
  * 负责离线缓存：首次安装后，所有学习内容可离线使用
  */
 
-const CACHE_NAME = 'shizileyuan-v2';
+const CACHE_NAME = 'shizileyuan-v3';
 
 // 预缓存列表：所有核心文件
 const PRE_CACHE_URLS = [
@@ -23,8 +23,7 @@ const PRE_CACHE_URLS = [
   './assets/icon-192.png',
   './assets/icon-512.png',
   './assets/apple-touch-icon.png',
-  // CDN 资源也缓存
-  'https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&family=Ma+Shan+Zheng&display=swap',
+  // Hanzi Writer CDN
   'https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js'
 ];
 
