@@ -24,7 +24,7 @@ function renderLearn(root, params) {
   if (!progress.learned) updateCharProgress(charData.id,'learned',true);
 
   // 构建页面
-  var html = '<div class="page active">';
+  var html = '<div class="page active page-learn">';
   html += '<div class="top-bar">';
   html += '<button class="back-btn" id="tb-back">←</button>';
   html += '<span class="title">'+charData.char+' · 第'+levelId+'关</span>';
