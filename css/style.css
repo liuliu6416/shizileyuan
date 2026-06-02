@@ -1,7 +1,7 @@
 /* ==============================
-   识字乐园 - iPad横屏专用设计
-   适配1024x768及以上横屏分辨率
-   认→读→写→练 四步学习流程
+   识字乐园 - iPad横屏设计 v2
+   竖屏也不隐藏内容，仅顶部提示
+   自动尝试锁定横屏
    ============================== */
 
 /* === CSS 变量 === */
@@ -16,14 +16,8 @@
   --color-card: #FFFFFF;
   --color-text: #3D3D3D;
   --color-text-light: #8C8C8C;
-  --color-sea: #2196F3;
 
-  --radius-xs: 6px;
-  --radius-sm: 12px;
-  --radius-md: 18px;
-  --radius-lg: 28px;
-  --radius-xl: 36px;
-
+  --radius-xs: 6px; --radius-sm: 12px; --radius-md: 18px; --radius-lg: 28px; --radius-xl: 36px;
   --shadow-sm: 0 2px 6px rgba(74,144,217,0.06);
   --shadow-md: 0 4px 14px rgba(74,144,217,0.10);
   --shadow-lg: 0 6px 24px rgba(74,144,217,0.12);
@@ -46,9 +40,22 @@ html,body{
   -webkit-tap-highlight-color:transparent;
   -webkit-font-smoothing:antialiased;
   -webkit-user-select:none;user-select:none;
-  -webkit-touch-callout:none;
 }
 
+/* 竖屏提示条（默认隐藏） */
+#rotate-hint{
+  display:none;
+  position:fixed;top:0;left:0;right:0;z-index:999;
+  background:var(--color-orange);color:white;
+  text-align:center;padding:6px;font-size:13px;font-weight:700;
+}
+
+/* 竖屏时显示提示条，但内容正常可见 */
+@media (orientation: portrait){
+  #rotate-hint{display:block}
+}
+
+/* 页面始终可见 */
 #app-root{
   width:100%;height:100%;
   overflow-y:auto;overflow-x:hidden;
@@ -56,49 +63,31 @@ html,body{
   background:linear-gradient(180deg,#E8F4FD 0%,#F0F7FF 40%,#FFF8EC 100%);
 }
 
-/* === 竖屏提示 === */
-#rotate-hint{
-  display:none;
-  position:fixed;top:0;left:0;width:100%;height:100%;
-  background:var(--color-bg);z-index:999;
-  flex-direction:column;align-items:center;justify-content:center;
-  text-align:center;
-}
-
-@media (orientation: portrait){
-  #rotate-hint{display:flex}
-  #app-root{display:none}
-}
-
-@media (orientation: landscape){
-  #rotate-hint{display:none}
-  #app-root{display:block}
-}
-
 /* === 页面 === */
 .page{
-  display:none;width:100%;height:100%;padding:6px 12px;
+  display:none;width:100%;min-height:100%;
+  padding:6px 12px;
   padding-top:calc(6px + var(--safe-top));
   padding-bottom:calc(6px + var(--safe-bottom));
   padding-left:calc(12px + var(--safe-left));
   padding-right:calc(12px + var(--safe-right));
   animation:fadeIn 0.3s ease-out;
 }
-.page.active{display:flex;flex-direction:column;}
+.page.active{display:block;}
 
 @keyframes fadeIn{
   from{opacity:0;transform:translateY(8px)}
   to{opacity:1;transform:translateY(0)}
 }
 
-/* === 顶部栏（高40px以内） === */
+/* === 顶部栏 === */
 .top-bar{
   display:flex;align-items:center;gap:8px;height:36px;
-  padding:0 4px;margin-bottom:4px;flex-shrink:0;
+  padding:0 4px;margin-bottom:6px;
 }
 .top-bar .back-btn{
-  width:30px;height:30px;border:none;border-radius:50%;
-  background:white;font-size:15px;box-shadow:var(--shadow-sm);
+  width:32px;height:32px;border:none;border-radius:50%;
+  background:white;font-size:16px;box-shadow:var(--shadow-sm);
   cursor:pointer;display:flex;align-items:center;justify-content:center;
   color:var(--color-sky);flex-shrink:0;
 }
@@ -128,15 +117,15 @@ html,body{
   transition:width 0.8s var(--transition-bounce)
 }
 
-/* ===== 首页（iPad横屏：5列网格） ===== */
-.home-header{text-align:center;padding:4px 0;flex-shrink:0}
-.home-header .mascot{font-size:36px}
-.home-header .app-title{font-size:24px;font-weight:800;color:var(--color-sky);letter-spacing:2px}
-.home-header .app-subtitle{font-size:11px;color:var(--color-text-light)}
+/* ===== 首页 ===== */
+.home-header{text-align:center;padding:4px 0}
+.home-header .mascot{font-size:40px}
+.home-header .app-title{font-size:26px;font-weight:800;color:var(--color-sky);letter-spacing:2px}
+.home-header .app-subtitle{font-size:12px;color:var(--color-text-light)}
 
 .progress-section{
   padding:8px 14px;background:white;border-radius:var(--radius-md);
-  box-shadow:var(--shadow-md);margin:4px 0;flex-shrink:0;
+  box-shadow:var(--shadow-md);margin:4px 0;
 }
 .progress-section .progress-label{
   display:flex;justify-content:space-between;margin-bottom:4px;
@@ -146,17 +135,17 @@ html,body{
 
 .level-grid{
   display:grid;grid-template-columns:repeat(5,1fr);
-  gap:8px;padding:4px 0;flex:1;overflow-y:auto;align-content:start;
+  gap:8px;padding:4px 0;
 }
 .level-card{
-  background:white;border-radius:var(--radius-md);padding:8px 6px;
+  background:white;border-radius:var(--radius-md);padding:10px 6px;
   text-align:center;box-shadow:var(--shadow-md);cursor:pointer;
   transition:all 0.15s;border:3px solid transparent;
   display:flex;flex-direction:column;align-items:center;gap:2px;
 }
 .level-card:active{transform:scale(0.95);border-color:var(--color-sky)}
-.level-card .level-icon{font-size:22px}
-.level-card .level-name{font-size:12px;font-weight:800}
+.level-card .level-icon{font-size:24px}
+.level-card .level-name{font-size:13px;font-weight:800}
 .level-card .level-theme{font-size:9px;color:var(--color-text-light)}
 .level-card .level-stars{font-size:10px}
 
@@ -179,16 +168,16 @@ html,body{
 .nav-item.active{color:var(--color-sky);background:#E8F4FD;font-weight:700}
 .nav-item:active{transform:scale(0.93)}
 
-/* ===== 学习页：四步流程（iPad横屏核心布局） ===== */
-/* 步骤指示器 */
+/* ===== 学习页：步骤指示器 ===== */
 .step-indicator{
   display:flex;align-items:center;justify-content:center;gap:0;
-  height:32px;flex-shrink:0;margin-bottom:4px;
+  margin-bottom:6px;
 }
 .step-dot{
-  display:flex;align-items:center;gap:3px;padding:4px 12px;
+  display:flex;align-items:center;gap:3px;padding:5px 12px;
   border-radius:16px;font-size:11px;font-weight:700;
   background:#E8F0FA;color:#999;cursor:pointer;transition:all 0.2s;
+  border:none;
 }
 .step-dot .step-icon{font-size:16px}
 .step-dot.active{background:var(--color-sky);color:white;transform:scale(1.1)}
@@ -196,17 +185,17 @@ html,body{
 .step-line{width:18px;height:2px;background:#DDD;margin:0 2px}
 .step-line.done{background:var(--color-green)}
 
-/* 主内容区：flex填充剩余空间 */
-.step-content{flex:1;overflow:hidden;display:flex;flex-direction:column}
+/* 步骤内容区 */
+#step-box{position:relative}
 
-/* ---------- 步骤1：认（左右分栏） ---------- */
+/* ===== 步骤1：认（左右分栏） ===== */
 .ren-layout{
-  display:flex;gap:16px;height:100%;align-items:stretch;
+  display:flex;gap:16px;align-items:stretch;
 }
 .ren-left{
   flex:1;display:flex;flex-direction:column;align-items:center;
   justify-content:center;background:white;border-radius:var(--radius-lg);
-  box-shadow:var(--shadow-lg);padding:8px;min-width:0;
+  box-shadow:var(--shadow-lg);padding:12px;min-width:0;
 }
 .ren-char-big{
   font-size:clamp(80px,14vw,180px);font-weight:900;line-height:1;
@@ -240,10 +229,28 @@ html,body{
 .ren-word-row .rw-py{font-size:11px;color:var(--color-text-light)}
 .ren-sentence{font-size:14px;color:var(--color-text-light);text-align:center}
 
-/* ---------- 步骤2：读（居中大屏） ---------- */
+/* 发音按钮 */
+.speak-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:4px;
+  padding:8px 18px;border:2px solid var(--color-sky);border-radius:var(--radius-xl);
+  background:white;font-size:14px;color:var(--color-sky);
+  cursor:pointer;transition:all 0.2s;font-weight:600;
+}
+.speak-btn:active{background:var(--color-sky);color:white;transform:scale(0.95)}
+
+/* 抽象字气泡 */
+.illus-bubble{
+  width:140px;height:140px;border-radius:50%;
+  margin:0 auto;display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow-lg);animation:float-bubble 3.5s ease-in-out infinite;
+}
+@keyframes float-bubble{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.illus-bubble .bubble-char{font-size:60px;color:white;font-weight:800}
+
+/* ===== 步骤2：读 ===== */
 .du-layout{
   display:flex;flex-direction:column;align-items:center;
-  justify-content:center;height:100%;gap:12px;
+  justify-content:center;gap:12px;padding:20px 0;
 }
 .du-char{font-size:clamp(80px,14vw,160px);font-weight:900}
 .du-pinyin{font-size:28px;font-weight:700;color:var(--color-sky);letter-spacing:4px}
@@ -264,33 +271,29 @@ html,body{
 .du-hint{font-size:14px;color:var(--color-text-light)}
 .du-encourage{font-size:18px;font-weight:700;color:var(--color-green);min-height:24px;text-align:center}
 
-/* ---------- 步骤3：写（左右分栏：演示+田字格） ---------- */
+/* ===== 步骤3：写 ===== */
 .xie-layout{
-  display:flex;gap:12px;height:100%;align-items:center;justify-content:center;
+  display:flex;gap:14px;justify-content:center;align-items:flex-start;
 }
-.xie-demo-side{
-  display:flex;flex-direction:column;align-items:center;gap:8px;
-}
+.xie-demo-side{display:flex;flex-direction:column;align-items:center;gap:6px}
 .xie-demo-area{
   width:220px;height:220px;background:white;
   border-radius:var(--radius-md);box-shadow:var(--shadow-md);
 }
-.xie-trace-side{
-  display:flex;flex-direction:column;align-items:center;gap:6px;
-}
+.xie-trace-side{display:flex;flex-direction:column;align-items:center;gap:6px}
+
 /* 田字格 */
 .tzgrid-wrap{position:relative;width:240px;height:240px}
 .tzgrid-canvas{width:100%;height:100%;background:white;border-radius:8px;touch-action:none}
 .xie-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
 .xie-msg{font-size:14px;font-weight:700;color:var(--color-green);min-height:20px;text-align:center}
 
-/* ---------- 步骤4：练（大炮打帆船·全景） ---------- */
+/* ===== 步骤4：练（大炮） ===== */
 .lian-scene{
-  position:relative;width:100%;height:100%;
+  position:relative;width:100%;height:55vh;min-height:280px;
   overflow:hidden;border-radius:var(--radius-lg);
   background:linear-gradient(180deg,#87CEEB 0%,#5BA3E6 35%,#2196F3 65%,#1565C0 100%);
 }
-/* 海浪 */
 .sea-waves{
   position:absolute;bottom:0;left:0;right:0;height:30%;
   background:linear-gradient(180deg,rgba(33,150,243,0.5) 0%,rgba(21,101,192,0.85) 100%);
@@ -304,13 +307,11 @@ html,body{
 @keyframes wave-ripple{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 @keyframes wave-move{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 
-/* 帆船 */
 .sailboat{
   position:absolute;cursor:pointer;
   display:flex;flex-direction:column;align-items:center;
   animation:sail-rock 3.5s ease-in-out infinite;
-  transition:transform 0.3s,opacity 0.5s;
-  z-index:3;
+  transition:transform 0.3s,opacity 0.5s;z-index:3;
 }
 @keyframes sail-rock{
   0%,100%{transform:translateY(0) rotate(-1deg)}
@@ -320,8 +321,7 @@ html,body{
 }
 .sailboat .sail{
   width:0;height:0;
-  border-left:18px solid transparent;
-  border-right:18px solid transparent;
+  border-left:18px solid transparent;border-right:18px solid transparent;
   border-bottom:36px solid #FFF;
   filter:drop-shadow(0 1px 2px rgba(0,0,0,0.08));
 }
@@ -334,41 +334,22 @@ html,body{
   text-shadow:1px 1px 0 white;
 }
 
-/* 大炮 */
 .cannon{
   position:absolute;bottom:6%;left:50%;transform:translateX(-50%);z-index:10;
   display:flex;flex-direction:column;align-items:center;
 }
-.cannon .barrel{
-  width:14px;height:44px;background:linear-gradient(180deg,#666,#444);
-  border-radius:7px 7px 3px 3px;transform:rotate(-8deg);
-}
-.cannon .base{
-  width:44px;height:22px;background:linear-gradient(180deg,#8B4513,#654321);
-  border-radius:50% 50% 0 0;
-}
-.cannon .wheel{
-  width:26px;height:26px;background:radial-gradient(circle,#8B4513 35%,#654321 35%);
-  border-radius:50%;border:3px solid #555;margin-top:-7px;
-}
+.cannon .barrel{width:14px;height:44px;background:linear-gradient(180deg,#666,#444);border-radius:7px 7px 3px 3px;transform:rotate(-8deg)}
+.cannon .base{width:44px;height:22px;background:linear-gradient(180deg,#8B4513,#654321);border-radius:50% 50% 0 0}
+.cannon .wheel{width:26px;height:26px;background:radial-gradient(circle,#8B4513 35%,#654321 35%);border-radius:50%;border:3px solid #555;margin-top:-7px}
 
-/* 炮弹 */
-.cannonball{
-  position:absolute;width:10px;height:10px;
-  background:#333;border-radius:50%;z-index:15;pointer-events:none;
-}
+.cannonball{position:absolute;width:10px;height:10px;background:#333;border-radius:50%;z-index:15;pointer-events:none}
 
-/* 水花 */
 .splash{
   position:absolute;font-size:36px;z-index:20;pointer-events:none;
   animation:splash-pop 0.6s ease-out forwards;
 }
-@keyframes splash-pop{
-  0%{transform:scale(0) translateY(0);opacity:1}
-  100%{transform:scale(2) translateY(-25px);opacity:0}
-}
+@keyframes splash-pop{0%{transform:scale(0) translateY(0);opacity:1}100%{transform:scale(2) translateY(-25px);opacity:0}}
 
-/* 游戏提示 */
 .lian-prompt{
   position:absolute;top:6px;left:50%;transform:translateX(-50%);
   background:rgba(0,0,0,0.5);color:white;padding:4px 14px;
@@ -400,7 +381,7 @@ html,body{
 @keyframes star-pop{
   0%{transform:scale(0) rotate(-180deg);opacity:0}
   60%{transform:scale(1.4) rotate(8deg);opacity:1}
-  100%{transform:scale(1) rotate(0);opacity:1}
+  100%{transform:scale(1) rotate(0deg);opacity:1}
 }
 .star-animation{
   position:fixed;top:50%;left:50%;
@@ -410,50 +391,49 @@ html,body{
 }
 
 /* ===== 复习页 ===== */
-.review-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:4px 0;flex-shrink:0}
+.review-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:4px 0}
 .stat-card{background:white;border-radius:var(--radius-md);padding:8px;text-align:center;box-shadow:var(--shadow-md)}
 .stat-card .stat-number{font-size:20px;font-weight:800;color:var(--color-sky)}
 .stat-card .stat-label{font-size:10px;color:var(--color-text-light)}
 
-.char-grid{
-  display:grid;grid-template-columns:repeat(10,1fr);gap:5px;
-  flex:1;overflow-y:auto;align-content:start;
-}
-.char-chip{
-  aspect-ratio:1;display:flex;align-items:center;justify-content:center;
-  border-radius:var(--radius-xs);font-size:18px;font-weight:800;
-  cursor:pointer;transition:all 0.15s;
-  border:2px solid transparent;background:white;box-shadow:var(--shadow-sm);
-}
+.char-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;padding:4px 0}
+.char-chip{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-xs);font-size:18px;font-weight:800;cursor:pointer;transition:all 0.15s;border:2px solid transparent;background:white;box-shadow:var(--shadow-sm)}
 .char-chip.mastered{background:#F0FFF0;border-color:var(--color-green)}
 .char-chip.learning{background:#FFFBF0;border-color:var(--color-orange)}
 .char-chip.locked{background:#F5F7FA;color:#CCC}
 .char-chip:active{transform:scale(0.85)}
 
-.achievements{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:4px 0;flex-shrink:0}
+.achievements{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:4px 0}
 .badge{display:flex;flex-direction:column;align-items:center;gap:0;padding:6px;border-radius:var(--radius-sm);background:white;box-shadow:var(--shadow-sm)}
 .badge.earned{border:2px solid var(--color-star)}
 .badge.locked{opacity:0.4}
 .badge .badge-icon{font-size:22px}
 .badge .badge-name{font-size:9px;color:var(--color-text-light);text-align:center}
 
+/* ===== 错误抖动 ===== */
+@keyframes wrong-shake{
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-6px)}
+  40%{transform:translateX(6px)}
+  60%{transform:translateX(-4px)}
+  80%{transform:translateX(4px)}
+}
+
 /* ===== 离线 ===== */
 #offline-banner{position:fixed;top:0;left:0;right:0;background:var(--color-orange);color:white;text-align:center;padding:4px;font-size:11px;z-index:200}
 
-/* ===== 滚动条 ===== */
 ::-webkit-scrollbar{width:2px}
 ::-webkit-scrollbar-thumb{background:#D0E4F7;border-radius:2px}
 
-/* ===== 更小屏幕横屏（iPhone横屏） ===== */
-@media (max-width:700px) and (orientation:landscape){
+/* 小屏横屏 */
+@media (max-width:700px){
   .level-grid{grid-template-columns:repeat(5,1fr);gap:4px}
-  .level-card{padding:4px 2px}
-  .level-card .level-icon{font-size:16px}
-  .level-card .level-name{font-size:10px}
-  .level-card .level-theme{font-size:8px}
+  .level-card{padding:6px 3px}
+  .level-card .level-icon{font-size:18px}
+  .level-card .level-name{font-size:11px}
   .char-grid{grid-template-columns:repeat(8,1fr)}
-  .ren-char-big{font-size:clamp(50px,10vw,100px)}
-  .du-char{font-size:clamp(50px,10vw,100px)}
+  .ren-char-big{font-size:clamp(50px,12vw,90px)}
+  .du-char{font-size:clamp(50px,12vw,90px)}
   .xie-demo-area{width:160px;height:160px}
   .tzgrid-wrap{width:180px;height:180px}
 }

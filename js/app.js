@@ -13,6 +13,9 @@ var App = {
   init: function() {
     var self = this;
 
+    // 自动锁定横屏
+    this.lockLandscape();
+
     // 初始化TTS
     ChineseTTS.init();
 
@@ -116,6 +119,36 @@ var App = {
    */
   navigateTo: function(page) {
     location.hash = '#' + page;
+  },
+
+  /**
+   * 自动锁定横屏
+   */
+  lockLandscape: function() {
+    // 方法1: Screen Orientation API (PWA standalone模式可用)
+    if (screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock('landscape').then(function() {
+        console.log('✅ 横屏已锁定');
+      }).catch(function() {
+        console.log('⚠️ 需要添加到主屏幕才能锁定横屏');
+      });
+    }
+    // 方法2: 监听旋转事件，不强制但提示
+    window.addEventListener('orientationchange', function() {
+      var hint = document.getElementById('rotate-hint');
+      if (hint) {
+        if (window.innerHeight > window.innerWidth) {
+          hint.style.display = 'block';
+        } else {
+          hint.style.display = 'none';
+        }
+      }
+    });
+    // 初始检查
+    var hint = document.getElementById('rotate-hint');
+    if (hint && window.innerHeight > window.innerWidth) {
+      hint.style.display = 'block';
+    }
   },
 
   /**
